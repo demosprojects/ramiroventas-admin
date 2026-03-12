@@ -65,9 +65,11 @@ const ALIAS_CATEGORIAS = {
     'dormitorio': 'Dormitorio', 'cuarto': 'Dormitorio', 'habitacion': 'Dormitorio', 'habitación': 'Dormitorio',
     'cocina': 'Cocina & Comedor', 'comedor': 'Cocina & Comedor',
     'exterior': 'Exterior', 'jardin': 'Exterior', 'jardín': 'Exterior', 'patio': 'Exterior',
-    'tecnologia': 'Tecnología', 'tecnología': 'Tecnología', 'electronica': 'Tecnología', 'electrónica': 'Tecnología', 'electronico': 'Tecnología', 'electrónico': 'Tecnología',
+    'electronica': 'Electrónica', 'electrónica': 'Electrónica', 'electronico': 'Electrónica', 'electrónico': 'Electrónica', 'tecnologia': 'Electrónica', 'tecnología': 'Electrónica',
+    'electrodomesticos': 'Electrodomésticos', 'electrodomésticos': 'Electrodomésticos', 'electrodomestico': 'Electrodomésticos', 'electrodoméstico': 'Electrodomésticos',
     'climatizacion': 'Climatización', 'climatización': 'Climatización', 'aire': 'Climatización', 'calefaccion': 'Climatización', 'calefacción': 'Climatización',
     'mates': 'Mates', 'mate': 'Mates',
+    'mochilas': 'Mochilas', 'mochila': 'Mochilas', 'bolso': 'Mochilas', 'bolsos': 'Mochilas',
 };
 
 function aplicarFiltros() {
