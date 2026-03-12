@@ -167,9 +167,11 @@
                     <option value="Dormitorio">Dormitorio</option>
                     <option value="Cocina & Comedor">Cocina & Comedor</option>
                     <option value="Exterior">Exterior</option>
-                    <option value="Tecnología">Tecnología</option>
+                    <option value="Electrónica">Electrónica</option>
+                    <option value="Electrodomésticos">Electrodomésticos</option>
                     <option value="Climatización">Climatización</option>
                     <option value="Mates">Mates</option>
+                    <option value="Mochilas">Mochilas</option>
                 </select>
 
                 <button onclick="abrirModalCrear()" class="bg-[#0056b3] text-white px-6 py-2.5 rounded-xl font-black italic uppercase tracking-wider shadow-md hover:bg-blue-700 transition-all text-[12px]">
@@ -216,17 +218,19 @@
                         <option value="Dormitorio">Dormitorio</option>
                         <option value="Cocina & Comedor">Cocina & Comedor</option>
                         <option value="Exterior">Exterior</option>
-                        <option value="Tecnología">Tecnología</option>
+                        <option value="Electrónica">Electrónica</option>
+                        <option value="Electrodomésticos">Electrodomésticos</option>
                         <option value="Climatización">Climatización</option>
                         <option value="Mates">Mates</option>
+                        <option value="Mochilas">Mochilas</option>
                     </select>
                 </div>
 
                 <!-- Descripción / Características -->
                 <div class="md:col-span-2">
-                    <label class="text-[9px] font-black uppercase text-slate-400 mb-1 block tracking-wider">Descripción</label>
+                    <label class="text-[9px] font-black uppercase text-slate-400 mb-1 block tracking-wider">Descripción <span class="normal-case font-semibold text-slate-300 italic">(opcional)</span></label>
                     <textarea id="descripcion" rows="2" class="w-full bg-slate-50 p-2.5 rounded-lg border border-slate-200 focus:border-[#0056b3] outline-none font-bold text-sm resize-none" placeholder="Breve info..."></textarea>
-                    <label class="text-[9px] font-black uppercase text-slate-400 mb-1 mt-2 block tracking-wider">Características Técnicas</label>
+                    <label class="text-[9px] font-black uppercase text-slate-400 mb-1 mt-2 block tracking-wider">Características Técnicas <span class="normal-case font-semibold text-slate-300 italic">(opcional)</span></label>
                     <textarea id="caracteristicas" rows="2" class="w-full bg-slate-50 p-2.5 rounded-lg border border-slate-200 focus:border-[#0056b3] outline-none font-bold text-sm resize-none" placeholder="Medidas, materiales..."></textarea>
                 </div>
 
@@ -586,7 +590,9 @@ var variantesData = [];
                         <div class="flex items-center gap-2">
                             <span class="text-[9px] font-black text-slate-400 uppercase flex-shrink-0">$</span>
                             <input
-                                type="number"
+                                type="text"
+                                inputmode="numeric"
+                                autocomplete="off"
                                 placeholder="Precio"
                                 class="input-precio flex-grow bg-white border border-slate-200 focus:border-[#0056b3] outline-none rounded-lg px-2.5 py-1.5 font-bold text-xs">
                             <button type="button" class="btn-toggle flex-shrink-0 flex items-center gap-1 px-2 py-1.5 rounded-lg font-black text-[9px] uppercase transition-all ${disp ? 'bg-green-100 text-green-700 hover:bg-orange-100 hover:text-orange-600' : 'bg-orange-100 text-orange-600 hover:bg-green-100 hover:text-green-700'}">
@@ -601,7 +607,9 @@ var variantesData = [];
                         <div class="campo-precio-ant ${oferta ? '' : 'hidden'} mt-1.5 flex items-center gap-2">
                             <span class="text-[9px] font-black text-red-400 uppercase flex-shrink-0">Antes $</span>
                             <input
-                                type="number"
+                                type="text"
+                                inputmode="numeric"
+                                autocomplete="off"
                                 placeholder="Precio anterior"
                                 class="input-precio-ant flex-grow bg-white border border-red-200 focus:border-red-400 outline-none rounded-lg px-2.5 py-1.5 font-bold text-xs text-red-500">
                         </div>
@@ -616,15 +624,19 @@ var variantesData = [];
             div.querySelector('.input-precio').value    = v.precio !== '' ? v.precio : '';
             div.querySelector('.input-precio-ant').value = v.precioAnterior ? v.precioAnterior : '';
 
-            // Eventos — nunca re-renderizan
+            // Eventos — siempre leen data-idx actual del div para evitar desincronización
             div.querySelector('.input-nombre').addEventListener('input', function() {
                 variantesData[parseInt(div.dataset.idx)].nombre = this.value;
             });
             div.querySelector('.input-precio').addEventListener('input', function() {
-                variantesData[parseInt(div.dataset.idx)].precio = this.value;
+                const val = this.value.replace(/[^\d]/g, '');
+                if (this.value !== val) this.value = val;
+                variantesData[parseInt(div.dataset.idx)].precio = val;
             });
             div.querySelector('.input-precio-ant').addEventListener('input', function() {
-                variantesData[parseInt(div.dataset.idx)].precioAnterior = this.value;
+                const val = this.value.replace(/[^\d]/g, '');
+                if (this.value !== val) this.value = val;
+                variantesData[parseInt(div.dataset.idx)].precioAnterior = val;
             });
             div.querySelector('.btn-toggle').addEventListener('click', function() {
                 const idx = parseInt(div.dataset.idx);
