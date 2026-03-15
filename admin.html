@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel | Ramiro Ventas</title>
-    <link rel="icon" href="https://res.cloudinary.com/dnakyanzq/image/upload/v1773017774/ut30op01qzvotfrjlolg.webp">
+    <link rel="icon" href="https://res.cloudinary.com/dl2tftoum/image/upload/v1773538822/gdyps09azhjjppnjp4bo.webp">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
@@ -106,14 +106,52 @@
             opacity: 0; transition: opacity 0.2s;
         }
         .upload-zone:hover .remove-btn { opacity: 1; }
+
+        /* ── Scroll to Top ── */
+        #scroll-top {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.25rem;
+            width: 44px;
+            height: 44px;
+            background: #0056b3;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            cursor: pointer;
+            z-index: 99;
+            box-shadow: 0 4px 18px rgba(0,86,179,0.35);
+            opacity: 0;
+            transform: translateY(12px);
+            pointer-events: none;
+            transition: opacity 0.3s ease, transform 0.3s ease, background 0.2s;
+        }
+        #scroll-top.visible {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+        #scroll-top:hover { background: #004090; }
     </style>
+    <!-- 1. Manifest -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0b1221">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="RV Admin">
+<link rel="apple-touch-icon" href="https://res.cloudinary.com/dnakyanzq/image/upload/v1773017774/ut30op01qzvotfrjlolg.webp">
 </head>
 <body class="bg-gray-50 min-h-screen flex flex-col md:flex-row">
 
     <aside class="w-full md:w-[320px] flex-shrink-0 bg-[#0b1221] text-white flex flex-col border-r border-slate-900 z-20 md:min-h-screen">
         <div class="p-8 text-center flex flex-col items-center">
             <div class="bg-white p-2 rounded-2xl mb-4 shadow-xl">
-                <img src="logo.jpeg" alt="Logo" class="h-16 w-16 object-contain rounded-lg">
+                <img src="https://res.cloudinary.com/dl2tftoum/image/upload/v1773538822/gdyps09azhjjppnjp4bo.webp" alt="Logo" class="h-16 w-16 object-contain rounded-lg">
             </div>
             <h1 class="text-[13px] font-black uppercase italic tracking-[0.2em] text-slate-400">
                 Ramiro <span class="text-[#ffcc00]">Ventas</span>
@@ -132,13 +170,11 @@
             <button id="btn-logout" class="w-full flex items-center gap-4 p-4 text-[#ff5a5a] hover:bg-red-500/10 rounded-2xl font-black italic uppercase text-[11px] tracking-wider transition-all mt-4 border border-red-900/30">
                 <i class="fa-solid fa-right-from-bracket text-sm"></i> Cerrar Sesión
             </button>
-        </nav>
 
-        <div class="p-8">
-            <div class="border border-slate-800/60 rounded-2xl py-3 px-4 text-center">
-                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Powered by Hostara</p>
+            <div class="border border-slate-800/60 rounded-2xl py-3 px-4 text-center mt-3">
+                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Powered by <a href="https://hostara.vercel.app" target="_blank" rel="noopener noreferrer" class="hover:text-[#ffcc00] transition-colors">Hostara</a></p>
             </div>
-        </div>
+        </nav>
     </aside>
 
     <main class="flex-grow p-4 md:p-8 lg:p-10">
@@ -858,5 +894,34 @@ var variantesData = [];
             setTimeout(() => t.classList.add("translate-y-32"), 2800);
         }
     </script>
+
+    <!-- Scroll to Top -->
+    <button id="scroll-top" aria-label="Volver al inicio" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+        <i class="fa-solid fa-chevron-up"></i>
+    </button>
+
+    <script>
+        (function () {
+            const btn = document.getElementById('scroll-top');
+            window.addEventListener('scroll', function () {
+                if (window.scrollY > 300) {
+                    btn.classList.add('visible');
+                } else {
+                    btn.classList.remove('visible');
+                }
+            }, { passive: true });
+        })();
+    </script>
+
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js')
+        .then(reg => console.log('[PWA] SW registrado:', reg.scope))
+        .catch(err => console.warn('[PWA] Error al registrar SW:', err));
+    });
+  }
+</script>
 </body>
 </html>
