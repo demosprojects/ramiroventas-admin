@@ -138,7 +138,7 @@
         #scroll-top:hover { background: #004090; }
     </style>
     <!-- 1. Manifest -->
-<link rel="manifest" href="/manifest.json">
+<link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0b1221">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -917,7 +917,7 @@ var variantesData = [];
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js')
+      navigator.serviceWorker.register('sw.js')
         .then(reg => console.log('[PWA] SW registrado:', reg.scope))
         .catch(err => console.warn('[PWA] Error al registrar SW:', err));
     });
