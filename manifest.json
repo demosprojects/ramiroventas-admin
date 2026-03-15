@@ -1,0 +1,25 @@
+{
+  "name": "Ramiro Ventas Admin",
+  "short_name": "RV Admin",
+  "description": "Panel de administración de Ramiro Ventas",
+  "start_url": "/login",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b1221",
+  "theme_color": "#0b1221",
+  "icons": [
+    {
+      "src": "https://res.cloudinary.com/dnakyanzq/image/upload/v1773017774/ut30op01qzvotfrjlolg.webp",
+      "sizes": "192x192",
+      "type": "image/webp",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://res.cloudinary.com/dnakyanzq/image/upload/v1773017774/ut30op01qzvotfrjlolg.webp",
+      "sizes": "512x512",
+      "type": "image/webp",
+      "purpose": "any maskable"
+    }
+  ]
+}
