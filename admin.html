@@ -200,14 +200,27 @@
 
                 <select id="filtro-categoria" class="bg-white border border-slate-200 rounded-xl py-2.5 px-3 focus:border-[#0056b3] outline-none font-bold text-xs shadow-sm cursor-pointer">
                     <option value="todos">Todas las categorías</option>
-                    <option value="Dormitorio">Dormitorio</option>
-                    <option value="Cocina & Comedor">Cocina & Comedor</option>
+                    <optgroup label="── Dormitorio ──">
+                        <option value="Dormitorio">Dormitorio (todos)</option>
+                        <option value="__sub__Dormitorio__Colchones y sommiers">  ↳ Colchones y sommiers</option>
+                        <option value="__sub__Dormitorio__Roperos">  ↳ Roperos</option>
+                        <option value="__sub__Dormitorio__Comodas">  ↳ Cómodas</option>
+                        <option value="__sub__Dormitorio__Mesas de luz">  ↳ Mesas de luz</option>
+                    </optgroup>
+                    <option value="Cocina & Comedor">Cocina &amp; Comedor</option>
                     <option value="Exterior">Exterior</option>
                     <option value="Electrónica">Electrónica</option>
                     <option value="Electrodomésticos">Electrodomésticos</option>
                     <option value="Climatización">Climatización</option>
-                    <option value="Mates">Mates</option>
-                    <option value="Mochilas">Mochilas</option>
+                    <optgroup label="── Mates y Termos ──">
+                        <option value="Mates y Termos">Mates y Termos (todos)</option>
+                        <option value="__sub__Mates y Termos__Mates">  ↳ Mates</option>
+                        <option value="__sub__Mates y Termos__Termos">  ↳ Termos</option>
+                        <option value="__sub__Mates y Termos__Bombillas">  ↳ Bombillas</option>
+                        <option value="__sub__Mates y Termos__Accesorios">  ↳ Accesorios</option>
+                    </optgroup>
+                    <option value="Ferreteria y Hogar">Ferreteria y Hogar</option>
+                    <option value="Novedades y Varios">Novedades y Varios</option>
                 </select>
 
                 <button onclick="abrirModalCrear()" class="bg-[#0056b3] text-white px-6 py-2.5 rounded-xl font-black italic uppercase tracking-wider shadow-md hover:bg-blue-700 transition-all text-[12px]">
@@ -226,12 +239,15 @@
 
     <!-- ═══════════ MODAL CREAR/EDITAR ═══════════ -->
     <div id="modal-form" class="fixed inset-0 bg-slate-900/60 hidden z-[110] flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl w-full max-w-xl p-6 max-h-[90vh] overflow-y-auto no-scrollbar shadow-2xl">
-            <div class="flex justify-between items-center mb-5 border-b pb-3">
+        <div class="bg-white rounded-2xl w-full max-w-xl shadow-2xl flex flex-col max-h-[90vh]">
+            <!-- Header fijo -->
+            <div class="flex justify-between items-center px-6 pt-6 pb-4 border-b flex-shrink-0">
                 <h2 id="modal-titulo" class="text-lg font-black italic uppercase">Nuevo Producto</h2>
                 <button onclick="cerrarModalAdmin()" class="text-slate-400 hover:text-red-500 text-2xl transition-all">&times;</button>
             </div>
             <input type="hidden" id="edit-id">
+            <!-- Body con scroll propio -->
+            <div class="overflow-y-auto flex-grow px-6 py-4">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
                 <!-- Nombre -->
@@ -251,14 +267,27 @@
                     <label class="text-[9px] font-black uppercase text-slate-400 mb-1 block tracking-wider">Categoría</label>
                     <select id="categoria" class="w-full bg-slate-50 p-2.5 rounded-lg border border-slate-200 focus:border-[#0056b3] outline-none font-bold text-sm h-[42px]">
                         <option value="" disabled selected>Seleccione categoría</option>
-                        <option value="Dormitorio">Dormitorio</option>
-                        <option value="Cocina & Comedor">Cocina & Comedor</option>
+                        <optgroup label="── Dormitorio ──">
+                            <option value="Dormitorio">Dormitorio (general)</option>
+                            <option value="Dormitorio|Colchones y sommiers">  ↳ Colchones y sommiers</option>
+                            <option value="Dormitorio|Roperos">  ↳ Roperos</option>
+                            <option value="Dormitorio|Comodas">  ↳ Cómodas</option>
+                            <option value="Dormitorio|Mesas de luz">  ↳ Mesas de luz</option>
+                        </optgroup>
+                        <option value="Cocina & Comedor">Cocina &amp; Comedor</option>
                         <option value="Exterior">Exterior</option>
                         <option value="Electrónica">Electrónica</option>
                         <option value="Electrodomésticos">Electrodomésticos</option>
                         <option value="Climatización">Climatización</option>
-                        <option value="Mates">Mates</option>
-                        <option value="Mochilas">Mochilas</option>
+                        <optgroup label="── Mates y Termos ──">
+                            <option value="Mates y Termos">Mates y Termos (general)</option>
+                            <option value="Mates y Termos|Mates">  ↳ Mates</option>
+                            <option value="Mates y Termos|Termos">  ↳ Termos</option>
+                            <option value="Mates y Termos|Bombillas">  ↳ Bombillas</option>
+                            <option value="Mates y Termos|Accesorios">  ↳ Accesorios</option>
+                        </optgroup>
+                        <option value="Ferreteria y Hogar">Ferreteria y Hogar</option>
+                        <option value="Novedades y Varios">Novedades y Varios</option>
                     </select>
                 </div>
 
@@ -476,7 +505,10 @@
                 </div>
             </div>
 
-            <div class="mt-6 flex gap-2">
+            </div> <!-- cierre del body scrolleable -->
+
+            <!-- Footer fijo -->
+            <div class="flex gap-2 px-6 py-4 border-t flex-shrink-0">
                 <button onclick="cerrarModalAdmin()" class="flex-1 py-3 text-slate-400 font-bold uppercase text-[10px] tracking-wider hover:bg-slate-50 rounded-xl">Cancelar</button>
                 <button onclick="guardarProducto()" id="btn-guardar" class="flex-[2] bg-[#0056b3] text-white py-3 rounded-xl font-black italic uppercase text-[10px] tracking-wider shadow-lg shadow-blue-100 disabled:opacity-50 disabled:cursor-not-allowed relative">
                     <span id="btn-guardar-texto" class="flex items-center justify-center gap-1.5 transition-opacity"><i class="fa-solid fa-floppy-disk"></i>Guardar producto</span>
@@ -613,11 +645,27 @@ var variantesData = [];
         function _crearFilaVariante(v, i) {
             const disp    = v.disponible !== false;
             const oferta  = v.enOferta === true;
+            const imgUrl  = v.imagen || '';
             const div = document.createElement('div');
             div.className = `rounded-xl border ${disp ? 'border-slate-200 bg-slate-50' : 'border-orange-200 bg-orange-50'} p-2 transition-all`;
             div.dataset.idx = i;
             div.innerHTML = `
                 <div class="flex gap-2 items-start">
+                    <!-- Zona de imagen de variante -->
+                    <div class="variante-img-zone flex-shrink-0 w-14 h-14 rounded-xl border-2 border-dashed border-slate-200 bg-white cursor-pointer relative overflow-hidden flex items-center justify-center hover:border-[#0056b3] transition-all" title="Foto de la variante (opcional)">
+                        <input type="file" accept="image/*" class="variante-file-input absolute inset-0 opacity-0 cursor-pointer w-full h-full">
+                        <img class="variante-img-preview ${imgUrl ? '' : 'hidden'} absolute inset-0 w-full h-full object-cover" src="${imgUrl}" alt="">
+                        <div class="variante-img-placeholder flex flex-col items-center gap-0.5 ${imgUrl ? 'hidden' : ''}">
+                            <i class="fa-solid fa-camera text-slate-300 text-base"></i>
+                            <span class="text-[7px] font-black text-slate-300 uppercase">Foto</span>
+                        </div>
+                        <div class="variante-img-spinner hidden absolute inset-0 bg-white/80 flex items-center justify-center">
+                            <div class="spinner-mini"></div>
+                        </div>
+                        <button type="button" class="variante-img-remove ${imgUrl ? '' : 'hidden'} absolute bottom-0.5 right-0.5 w-5 h-5 bg-red-500 text-white rounded-md flex items-center justify-center">
+                            <i class="fa-solid fa-xmark text-[8px]"></i>
+                        </button>
+                    </div>
                     <div class="flex-grow min-w-0">
                         <input
                             type="text"
@@ -693,6 +741,60 @@ var variantesData = [];
                 });
             });
 
+            // ── Upload de imagen de variante ──
+            const imgZone    = div.querySelector('.variante-img-zone');
+            const imgInput   = div.querySelector('.variante-file-input');
+            const imgPreview = div.querySelector('.variante-img-preview');
+            const imgPlaceh  = div.querySelector('.variante-img-placeholder');
+            const imgSpinner = div.querySelector('.variante-img-spinner');
+            const imgRemove  = div.querySelector('.variante-img-remove');
+
+            imgInput.addEventListener('change', async function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                e.target.value = '';
+                // Mostrar spinner
+                imgSpinner.classList.remove('hidden');
+                imgSpinner.classList.add('flex');
+                setUploading(true);
+                try {
+                    const webpBlob = await convertToWebP(file);
+                    const formData = new FormData();
+                    formData.append('file', webpBlob, 'variante.webp');
+                    formData.append('upload_preset', UPLOAD_PRESET);
+                    const res  = await fetch(CLOUDINARY_URL, { method: 'POST', body: formData });
+                    const data = await res.json();
+                    if (data.secure_url) {
+                        const idx = parseInt(div.dataset.idx);
+                        variantesData[idx].imagen = data.secure_url;
+                        imgPreview.src = data.secure_url;
+                        imgPreview.classList.remove('hidden');
+                        imgPlaceh.classList.add('hidden');
+                        imgRemove.classList.remove('hidden');
+                        imgZone.classList.add('border-solid', 'border-[#0056b3]');
+                        imgZone.classList.remove('border-dashed', 'border-slate-200');
+                    }
+                } catch(err) {
+                    mostrarToastGlobal('Error al subir imagen de variante');
+                } finally {
+                    imgSpinner.classList.add('hidden');
+                    imgSpinner.classList.remove('flex');
+                    setUploading(false);
+                }
+            });
+
+            imgRemove.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const idx = parseInt(div.dataset.idx);
+                variantesData[idx].imagen = '';
+                imgPreview.src = '';
+                imgPreview.classList.add('hidden');
+                imgPlaceh.classList.remove('hidden');
+                imgRemove.classList.add('hidden');
+                imgZone.classList.remove('border-solid', 'border-[#0056b3]');
+                imgZone.classList.add('border-dashed', 'border-slate-200');
+            });
+
             return div;
         }
 
@@ -715,9 +817,9 @@ var variantesData = [];
             }
         }
 
-        function agregarVariante(nombre = '', precio = '', disponible = true, enOferta = false, precioAnterior = '') {
+        function agregarVariante(nombre = '', precio = '', disponible = true, enOferta = false, precioAnterior = '', imagen = '') {
             const idx = variantesData.length;
-            variantesData.push({ nombre, precio, disponible, enOferta, precioAnterior });
+            variantesData.push({ nombre, precio, disponible, enOferta, precioAnterior, imagen });
             const lista = document.getElementById('variantes-lista');
             lista.appendChild(_crearFilaVariante(variantesData[idx], idx));
         }
@@ -735,7 +837,8 @@ var variantesData = [];
                 v.precio ?? '',
                 v.disponible !== false,
                 v.enOferta === true,
-                v.precioAnterior ?? ''
+                v.precioAnterior ?? '',
+                v.imagen || ''
             ));
         }
 
