@@ -63,20 +63,38 @@ const KEYWORDS_AGOTADO     = ['agotado', 'sin stock', 'agotada', 'inactivo'];
 // Mapa de alias de categorías para búsqueda por texto
 const ALIAS_CATEGORIAS = {
     'dormitorio': 'Dormitorio', 'cuarto': 'Dormitorio', 'habitacion': 'Dormitorio', 'habitación': 'Dormitorio',
+    'colchon': 'Dormitorio', 'colchón': 'Dormitorio', 'colchones': 'Dormitorio', 'sommier': 'Dormitorio', 'sommiers': 'Dormitorio',
+    'ropero': 'Dormitorio', 'roperos': 'Dormitorio', 'placard': 'Dormitorio',
+    'comoda': 'Dormitorio', 'cómoda': 'Dormitorio', 'comodas': 'Dormitorio', 'cómodas': 'Dormitorio',
+    'mesa de luz': 'Dormitorio', 'mesas de luz': 'Dormitorio', 'mesita': 'Dormitorio', 'mesitas': 'Dormitorio',
     'cocina': 'Cocina & Comedor', 'comedor': 'Cocina & Comedor',
     'exterior': 'Exterior', 'jardin': 'Exterior', 'jardín': 'Exterior', 'patio': 'Exterior',
     'electronica': 'Electrónica', 'electrónica': 'Electrónica', 'electronico': 'Electrónica', 'electrónico': 'Electrónica', 'tecnologia': 'Electrónica', 'tecnología': 'Electrónica',
     'electrodomesticos': 'Electrodomésticos', 'electrodomésticos': 'Electrodomésticos', 'electrodomestico': 'Electrodomésticos', 'electrodoméstico': 'Electrodomésticos',
     'climatizacion': 'Climatización', 'climatización': 'Climatización', 'aire': 'Climatización', 'calefaccion': 'Climatización', 'calefacción': 'Climatización',
-    'mates': 'Mates', 'mate': 'Mates',
+    'mates': 'Mates y Termos', 'mate': 'Mates y Termos', 'mates y termos': 'Mates y Termos',
+    'termo': 'Mates y Termos', 'termos': 'Mates y Termos',
+    'bombilla': 'Mates y Termos', 'bombillas': 'Mates y Termos',
     'mochilas': 'Mochilas', 'mochila': 'Mochilas', 'bolso': 'Mochilas', 'bolsos': 'Mochilas',
+    'ferreteria': 'Ferreteria y Hogar', 'ferretería': 'Ferreteria y Hogar', 'hogar': 'Ferreteria y Hogar',
+    'novedades': 'Novedades y Varios', 'varios': 'Novedades y Varios',
 };
 
 function aplicarFiltros() {
     const textoRaw = document.getElementById('admin-buscador').value.trim();
     const texto    = textoRaw.toLowerCase();
     const stock    = document.getElementById('filtro-stock').value;
-    const cat      = document.getElementById('filtro-categoria').value;
+    const catVal   = document.getElementById('filtro-categoria').value;
+
+    // Nuevo formato: __sub__Categoria__Subcategoria
+    const esFiltroSubcat = catVal.startsWith('__sub__');
+    let catPadre = null, subcatFiltro = null;
+    if (esFiltroSubcat) {
+        const partes = catVal.replace('__sub__', '').split('__');
+        catPadre     = partes[0];   // ej: "Dormitorio" o "Mates y Termos"
+        subcatFiltro = partes[1];   // ej: "Roperos" o "Termos"
+    }
+    const cat = esFiltroSubcat ? 'todos' : catVal;
 
     // Detectar si el texto coincide con un keyword de disponibilidad
     const textoPideDisp    = KEYWORDS_DISPONIBLE.some(k => texto.includes(k));
@@ -87,16 +105,16 @@ function aplicarFiltros() {
 
     productosFiltrados = productos.filter(p => {
         // ── Filtro de texto ──
-        // Si el texto es un keyword de disponibilidad o categoría, no filtrar por nombre
         const esKeywordEspecial = textoPideDisp || textoPideAgotado || categoriaDetectada;
         const matchTexto = esKeywordEspecial
             ? true
-            : (texto === '' || p.nombre.toLowerCase().includes(texto) || (p.categoria && p.categoria.toLowerCase().includes(texto)));
+            : (texto === '' || p.nombre.toLowerCase().includes(texto) ||
+               (p.categoria && p.categoria.toLowerCase().includes(texto)) ||
+               (p.subcategoria && p.subcategoria.toLowerCase().includes(texto)));
 
-        // ── Filtro de stock (select + texto) ──
+        // ── Filtro de stock ──
         let matchStock;
         if (stock !== 'todos') {
-            // El select tiene prioridad
             matchStock = stock === 'disponible' ? p.disponible !== false : p.disponible === false;
         } else if (textoPideDisp) {
             matchStock = p.disponible !== false;
@@ -106,10 +124,12 @@ function aplicarFiltros() {
             matchStock = true;
         }
 
-        // ── Filtro de categoría (select + texto) ──
+        // ── Filtro de categoría / subcategoría ──
         let matchCat;
-        if (cat !== 'todos') {
-            // El select tiene prioridad
+        if (esFiltroSubcat) {
+            // Filtrar por categoría padre exacta + subcategoría exacta
+            matchCat = p.categoria === catPadre && p.subcategoria === subcatFiltro;
+        } else if (cat !== 'todos') {
             matchCat = p.categoria === cat;
         } else if (categoriaDetectada) {
             matchCat = p.categoria === categoriaDetectada;
@@ -215,7 +235,13 @@ window.guardarProducto = async function() {
     const precio = document.getElementById("precio").value;
 
     if (!nombre || !precio) return mostrarToast("Falta nombre o precio");
-    if (!document.getElementById("categoria").value) return mostrarToast("Seleccioná una categoría");
+    const catValRaw = document.getElementById("categoria").value;
+    if (!catValRaw) return mostrarToast("Seleccioná una categoría");
+
+    // Separar categoría principal y subcategoría (formato "Dormitorio|Roperos")
+    const partes       = catValRaw.split('|');
+    const categoriaVal = partes[0];
+    const subcatVal    = partes[1] || null; // null si no hay subcategoría
 
     // Leer las URLs desde los inputs hidden populados por el uploader de imágenes
     const imgs = [
@@ -239,13 +265,15 @@ window.guardarProducto = async function() {
             enOferta:       v.enOferta === true,
             precioAnterior: v.enOferta === true && Number(v.precioAnterior) > 0
                                 ? Number(v.precioAnterior)
-                                : null
+                                : null,
+            imagen:         v.imagen || null
         }));
 
     const datos = {
         nombre,
         precio:          Number(precio),
-        categoria:       document.getElementById("categoria").value,
+        categoria:       categoriaVal,
+        subcategoria:    subcatVal,
         descripcion:     document.getElementById("descripcion").value,
         caracteristicas: document.getElementById("caracteristicas").value,
         imagenes:        imgs,
@@ -308,7 +336,11 @@ window.editarProducto = function(id) {
     document.getElementById("edit-id").value        = id;
     document.getElementById("nombre").value         = p.nombre;
     document.getElementById("precio").value         = p.precio;
-    document.getElementById("categoria").value      = p.categoria || "Dormitorio";
+    // Pre-seleccionar categoría: si tiene subcategoría usar formato "Categoria|Subcategoria"
+    const selectCatVal = p.subcategoria
+        ? `${p.categoria}|${p.subcategoria}`
+        : (p.categoria || "Dormitorio");
+    document.getElementById("categoria").value      = selectCatVal;
     document.getElementById("descripcion").value    = p.descripcion || "";
     document.getElementById("caracteristicas").value = p.caracteristicas || "";
 
