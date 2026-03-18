@@ -319,7 +319,7 @@ window.abrirModalCrear = function() {
     document.getElementById("modal-titulo").innerText = "Nuevo Producto";
     document.getElementById("btn-guardar-texto").innerText = "Guardar producto";
     document.getElementById("modal-form").classList.remove("hidden");
-    document.getElementById("modal-form").querySelector("div").scrollTop = 0;
+    document.getElementById("modal-body").scrollTop = 0;
     document.body.classList.add("modal-active");
 }
 
@@ -367,7 +367,7 @@ window.editarProducto = function(id) {
     document.getElementById("modal-titulo").innerText = "Editar Producto";
     document.getElementById("btn-guardar-texto").innerText = "Actualizar producto";
     document.getElementById("modal-form").classList.remove("hidden");
-    document.getElementById("modal-form").querySelector("div").scrollTop = 0;
+    document.getElementById("modal-body").scrollTop = 0;
     document.body.classList.add("modal-active");
 }
 
