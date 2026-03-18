@@ -639,33 +639,11 @@ var variantesData = [];
         function _crearFilaVariante(v, i) {
             const disp    = v.disponible !== false;
             const oferta  = v.enOferta === true;
-            const imgUrl  = v.imagen || '';
-            // ID único por variante para vincular label↔input (requerido en iOS)
-            const fileId  = `vf-${Date.now()}-${i}`;
             const div = document.createElement('div');
             div.className = `rounded-xl border ${disp ? 'border-slate-200 bg-slate-50' : 'border-orange-200 bg-orange-50'} p-2 transition-all`;
             div.dataset.idx = i;
             div.innerHTML = `
                 <div class="flex gap-2 items-start">
-                    <!-- Foto de variante: label+input para compatibilidad iOS/Android -->
-                    <div class="flex-shrink-0 flex flex-col items-center gap-1">
-                        <label for="${fileId}"
-                            class="variante-img-label relative flex-shrink-0 w-14 h-14 rounded-xl overflow-hidden cursor-pointer block transition-all"
-                            style="border:2px dashed #cbd5e1; background:#f8fafc;">
-                            <input type="file" id="${fileId}" accept="image/*" class="variante-file-input sr-only">
-                            <img class="variante-img-preview w-full h-full object-cover ${imgUrl ? '' : 'hidden'}" src="${imgUrl}" alt="">
-                            <div class="variante-img-placeholder absolute inset-0 flex flex-col items-center justify-center gap-0.5 pointer-events-none ${imgUrl ? 'hidden' : ''}">
-                                <i class="fa-solid fa-camera text-slate-300 text-base"></i>
-                                <span class="text-[7px] font-black text-slate-300 uppercase">Foto</span>
-                            </div>
-                            <div class="variante-img-spinner hidden absolute inset-0 bg-white/80 items-center justify-center">
-                                <div class="spinner-mini"></div>
-                            </div>
-                        </label>
-                        <button type="button" class="variante-img-remove ${imgUrl ? '' : 'hidden'} text-[8px] font-black text-red-400 hover:text-red-600 uppercase leading-none transition-colors">
-                            <i class="fa-solid fa-xmark"></i> Quitar
-                        </button>
-                    </div>
                     <div class="flex-grow min-w-0">
                         <input
                             type="text"
@@ -704,11 +682,11 @@ var variantesData = [];
                 </div>`;
 
             // Setear valores
-            div.querySelector('.input-nombre').value     = v.nombre;
-            div.querySelector('.input-precio').value     = v.precio !== '' ? v.precio : '';
+            div.querySelector('.input-nombre').value    = v.nombre;
+            div.querySelector('.input-precio').value    = v.precio !== '' ? v.precio : '';
             div.querySelector('.input-precio-ant').value = v.precioAnterior ? v.precioAnterior : '';
 
-            // Eventos texto/precio
+            // Eventos — siempre leen data-idx actual del div para evitar desincronización
             div.querySelector('.input-nombre').addEventListener('input', function() {
                 variantesData[parseInt(div.dataset.idx)].nombre = this.value;
             });
@@ -741,59 +719,6 @@ var variantesData = [];
                 });
             });
 
-            // ── Upload imagen variante (label+input, compatible iOS Safari) ──
-            const imgInput   = div.querySelector('.variante-file-input');
-            const imgLabel   = div.querySelector('.variante-img-label');
-            const imgPreview = div.querySelector('.variante-img-preview');
-            const imgPlaceh  = div.querySelector('.variante-img-placeholder');
-            const imgSpinner = div.querySelector('.variante-img-spinner');
-            const imgRemove  = div.querySelector('.variante-img-remove');
-
-            imgInput.addEventListener('change', async function() {
-                const file = this.files[0];
-                if (!file) return;
-                this.value = '';
-                imgSpinner.classList.remove('hidden');
-                imgSpinner.classList.add('flex');
-                setUploading(true);
-                try {
-                    const webpBlob = await convertToWebP(file);
-                    const formData = new FormData();
-                    formData.append('file', webpBlob, 'variante.webp');
-                    formData.append('upload_preset', UPLOAD_PRESET);
-                    const res  = await fetch(CLOUDINARY_URL, { method: 'POST', body: formData });
-                    const data = await res.json();
-                    if (data.secure_url) {
-                        const idx = parseInt(div.dataset.idx);
-                        variantesData[idx].imagen = data.secure_url;
-                        imgPreview.src = data.secure_url;
-                        imgPreview.classList.remove('hidden');
-                        imgPlaceh.classList.add('hidden');
-                        imgRemove.classList.remove('hidden');
-                        imgLabel.style.border = '2px solid #0056b3';
-                    } else { throw new Error('Sin URL'); }
-                } catch(err) {
-                    console.error('Error imagen variante:', err);
-                    mostrarToastGlobal('❌ Error al subir imagen de variante');
-                } finally {
-                    imgSpinner.classList.add('hidden');
-                    imgSpinner.classList.remove('flex');
-                    setUploading(false);
-                }
-            });
-
-            imgRemove.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                const idx = parseInt(div.dataset.idx);
-                variantesData[idx].imagen = '';
-                imgPreview.src = '';
-                imgPreview.classList.add('hidden');
-                imgPlaceh.classList.remove('hidden');
-                imgRemove.classList.add('hidden');
-                imgLabel.style.border = '2px dashed #cbd5e1';
-            });
-
             return div;
         }
 
@@ -816,9 +741,9 @@ var variantesData = [];
             }
         }
 
-        function agregarVariante(nombre = '', precio = '', disponible = true, enOferta = false, precioAnterior = '', imagen = '') {
+        function agregarVariante(nombre = '', precio = '', disponible = true, enOferta = false, precioAnterior = '') {
             const idx = variantesData.length;
-            variantesData.push({ nombre, precio, disponible, enOferta, precioAnterior, imagen });
+            variantesData.push({ nombre, precio, disponible, enOferta, precioAnterior });
             const lista = document.getElementById('variantes-lista');
             lista.appendChild(_crearFilaVariante(variantesData[idx], idx));
         }
@@ -836,8 +761,7 @@ var variantesData = [];
                 v.precio ?? '',
                 v.disponible !== false,
                 v.enOferta === true,
-                v.precioAnterior ?? '',
-                v.imagen || ''
+                v.precioAnterior ?? ''
             ));
         }
 
@@ -923,7 +847,7 @@ var variantesData = [];
             }
         }
 
-        // Convierte cualquier imagen a WebP usando Canvas
+        // Convierte imagen a WebP con fallback a JPEG (iOS Safari no soporta WebP en Canvas)
         function convertToWebP(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -936,11 +860,15 @@ var variantesData = [];
                         canvas.width  = img.width;
                         canvas.height = img.height;
                         canvas.getContext('2d').drawImage(img, 0, 0);
-                        canvas.toBlob(
-                            (blob) => blob ? resolve(blob) : reject(new Error('Canvas toBlob falló')),
-                            'image/webp',
-                            0.85
-                        );
+                        // Intentar WebP primero
+                        canvas.toBlob((blob) => {
+                            if (blob) { resolve(blob); return; }
+                            // iOS no soporta WebP en Canvas → fallback a JPEG
+                            canvas.toBlob((jpegBlob) => {
+                                if (jpegBlob) { resolve(jpegBlob); return; }
+                                reject(new Error('No se pudo convertir la imagen'));
+                            }, 'image/jpeg', 0.88);
+                        }, 'image/webp', 0.85);
                     };
                     img.onerror = reject;
                 };
