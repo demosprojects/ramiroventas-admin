@@ -163,9 +163,9 @@
                 <i class="fa-solid fa-box text-sm"></i> Inventario
             </a>
             
-            <a href="index.html" class="flex items-center gap-4 p-4 text-slate-400 hover:text-white hover:bg-slate-800/30 rounded-2xl font-black italic uppercase text-[11px] tracking-wider transition-all">
-                <i class="fa-solid fa-shop text-sm"></i> Ver Tienda
-            </a>
+           <a href="https://ramiroventas.com.ar" target="_blank" rel="noopener noreferrer" class="flex items-center gap-4 p-4 text-slate-400 hover:text-white hover:bg-slate-800/30 rounded-2xl font-black italic uppercase text-[11px] tracking-wider transition-all">
+    <i class="fa-solid fa-shop text-sm"></i> Ver Tienda
+</a>
 
             <button id="btn-logout" class="w-full flex items-center gap-4 p-4 text-[#ff5a5a] hover:bg-red-500/10 rounded-2xl font-black italic uppercase text-[11px] tracking-wider transition-all mt-4 border border-red-900/30">
                 <i class="fa-solid fa-right-from-bracket text-sm"></i> Cerrar Sesión
@@ -239,12 +239,15 @@
 
     <!-- ═══════════ MODAL CREAR/EDITAR ═══════════ -->
     <div id="modal-form" class="fixed inset-0 bg-slate-900/60 hidden z-[110] flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl w-full max-w-xl p-6 max-h-[90vh] overflow-y-auto no-scrollbar shadow-2xl">
-            <div class="flex justify-between items-center mb-5 border-b pb-3">
+        <div class="bg-white rounded-2xl w-full max-w-xl shadow-2xl flex flex-col max-h-[90vh]">
+            <!-- Header fijo -->
+            <div class="flex justify-between items-center px-6 pt-6 pb-4 border-b flex-shrink-0">
                 <h2 id="modal-titulo" class="text-lg font-black italic uppercase">Nuevo Producto</h2>
                 <button onclick="cerrarModalAdmin()" class="text-slate-400 hover:text-red-500 text-2xl transition-all">&times;</button>
             </div>
             <input type="hidden" id="edit-id">
+            <!-- Body con scroll propio -->
+            <div id="modal-body" class="overflow-y-auto flex-grow px-6 py-4">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
                 <!-- Nombre -->
@@ -502,7 +505,10 @@
                 </div>
             </div>
 
-            <div class="mt-6 flex gap-2">
+            </div> <!-- cierre del body scrolleable -->
+
+            <!-- Footer fijo -->
+            <div class="flex gap-2 px-6 py-4 border-t flex-shrink-0">
                 <button onclick="cerrarModalAdmin()" class="flex-1 py-3 text-slate-400 font-bold uppercase text-[10px] tracking-wider hover:bg-slate-50 rounded-xl">Cancelar</button>
                 <button onclick="guardarProducto()" id="btn-guardar" class="flex-[2] bg-[#0056b3] text-white py-3 rounded-xl font-black italic uppercase text-[10px] tracking-wider shadow-lg shadow-blue-100 disabled:opacity-50 disabled:cursor-not-allowed relative">
                     <span id="btn-guardar-texto" class="flex items-center justify-center gap-1.5 transition-opacity"><i class="fa-solid fa-floppy-disk"></i>Guardar producto</span>
@@ -536,7 +542,9 @@
         <button onclick="cerrarLightbox()" class="absolute top-4 right-4 text-white/60 hover:text-white w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-all z-10">
             <i class="fa-solid fa-xmark text-lg"></i>
         </button>
+        <!-- Contador -->
         <div id="lightbox-counter" class="absolute top-4 left-1/2 -translate-x-1/2 text-white/60 font-black italic uppercase text-[10px] tracking-widest bg-white/10 px-3 py-1 rounded-full hidden"></div>
+        <!-- Imagen principal -->
         <div class="relative flex items-center justify-center w-full max-w-3xl max-h-[75vh]" onclick="event.stopPropagation()">
             <button id="lightbox-prev" onclick="lightboxNav(-1)" class="absolute left-0 -translate-x-12 text-white/60 hover:text-white w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-all hidden">
                 <i class="fa-solid fa-chevron-left"></i>
@@ -546,6 +554,7 @@
                 <i class="fa-solid fa-chevron-right"></i>
             </button>
         </div>
+        <!-- Miniaturas -->
         <div id="lightbox-thumbs" class="flex gap-2 mt-4 overflow-x-auto no-scrollbar max-w-xl px-2" onclick="event.stopPropagation()"></div>
     </div>
 
@@ -598,11 +607,14 @@
         function _renderLightbox() {
             document.getElementById('lightbox-img').src = _lbImgs[_lbIdx];
             const multi = _lbImgs.length > 1;
+            // Contador
             const counter = document.getElementById('lightbox-counter');
             counter.classList.toggle('hidden', !multi);
             counter.textContent = `${_lbIdx + 1} / ${_lbImgs.length}`;
+            // Flechas
             document.getElementById('lightbox-prev').classList.toggle('hidden', !multi);
             document.getElementById('lightbox-next').classList.toggle('hidden', !multi);
+            // Miniaturas
             const thumbs = document.getElementById('lightbox-thumbs');
             thumbs.innerHTML = multi ? _lbImgs.map((src, i) => `
                 <button onclick="window.lightboxNav(${i - _lbIdx})" class="flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 transition-all ${i === _lbIdx ? 'border-white scale-105' : 'border-white/20 opacity-50 hover:opacity-80'}">
@@ -611,6 +623,7 @@
             `).join('') : '';
         }
 
+        // Navegar con teclado en el lightbox
         document.addEventListener('keydown', (e) => {
             if (document.getElementById('modal-lightbox').classList.contains('hidden')) return;
             if (e.key === 'ArrowLeft')  lightboxNav(-1);
@@ -625,34 +638,33 @@
             if (!checkbox.checked) document.getElementById('precioAnterior').value = '';
         }
 
-        // ── Variantes ──
-        var variantesData = [];
+  
+      // ── Variantes ──
+var variantesData = [];
 
         function _crearFilaVariante(v, i) {
             const disp    = v.disponible !== false;
             const oferta  = v.enOferta === true;
             const imgUrl  = v.imagen || '';
-            const fileId  = 'vf-' + Date.now() + '-' + i;
             const div = document.createElement('div');
             div.className = `rounded-xl border ${disp ? 'border-slate-200 bg-slate-50' : 'border-orange-200 bg-orange-50'} p-2 transition-all`;
             div.dataset.idx = i;
             div.innerHTML = `
                 <div class="flex gap-2 items-start">
-                    <!-- Foto variante: label+input compatible iOS/Android -->
-                    <div class="flex-shrink-0 flex flex-col items-center gap-1">
-                        <label for="${fileId}" class="variante-img-label relative w-14 h-14 rounded-xl overflow-hidden cursor-pointer block" style="border:2px dashed #cbd5e1;background:#f8fafc;">
-                            <input type="file" id="${fileId}" accept="image/*" class="variante-file-input sr-only">
-                            <img class="variante-img-preview w-full h-full object-cover ${imgUrl ? '' : 'hidden'}" src="${imgUrl}" alt="">
-                            <div class="variante-img-placeholder absolute inset-0 flex flex-col items-center justify-center gap-0.5 pointer-events-none ${imgUrl ? 'hidden' : ''}">
-                                <i class="fa-solid fa-camera text-slate-300 text-base"></i>
-                                <span class="text-[7px] font-black text-slate-300 uppercase">Foto</span>
-                            </div>
-                            <div class="variante-img-spinner hidden absolute inset-0 bg-white/80 items-center justify-center">
-                                <div class="spinner-mini"></div>
-                            </div>
-                        </label>
-                        <button type="button" class="variante-img-remove ${imgUrl ? '' : 'hidden'} text-[8px] font-black text-red-400 hover:text-red-600 uppercase transition-colors">
-                            <i class="fa-solid fa-xmark"></i> Quitar
+                    <!-- Zona de imagen de variante -->
+                    <div class="variante-img-zone flex-shrink-0 w-14 h-14 rounded-xl border-2 border-dashed border-slate-200 bg-white cursor-pointer relative overflow-hidden flex items-center justify-center hover:border-[#0056b3] transition-all" title="Foto de la variante (opcional)">
+                        <input type="file" accept="image/*" class="variante-file-input absolute inset-0 opacity-0 cursor-pointer w-full h-full">
+                        <img class="variante-img-preview ${imgUrl ? '' : 'hidden'} absolute inset-0 w-full h-full object-cover" src="${imgUrl}" alt="">
+                        <div class="variante-img-placeholder flex flex-col items-center gap-0.5 ${imgUrl ? 'hidden' : ''}">
+                            <i class="fa-solid fa-camera text-slate-300 text-base"></i>
+                            <span class="text-[7px] font-black text-slate-300 uppercase">Foto</span>
+                        </div>
+                        <div class="variante-img-spinner absolute inset-0 bg-white/90 flex-col items-center justify-center gap-1" style="display:none">
+                            <div class="spinner-mini"></div>
+                            <span style="font-size:7px;font-weight:900;text-transform:uppercase;color:#f59e0b;letter-spacing:0.05em">Subiendo</span>
+                        </div>
+                        <button type="button" class="variante-img-remove ${imgUrl ? '' : 'hidden'} absolute bottom-0.5 right-0.5 w-5 h-5 bg-red-500 text-white rounded-md flex items-center justify-center">
+                            <i class="fa-solid fa-xmark text-[8px]"></i>
                         </button>
                     </div>
                     <div class="flex-grow min-w-0">
@@ -660,19 +672,21 @@
                             type="text"
                             placeholder="Ej: 80x190 (1 plaza)"
                             class="input-nombre w-full bg-white border border-slate-200 focus:border-[#0056b3] outline-none rounded-lg px-2.5 py-1.5 font-bold text-xs mb-1.5">
-                        <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-2 mb-1.5">
                             <span class="text-[9px] font-black text-slate-400 uppercase flex-shrink-0">$</span>
                             <input
                                 type="text"
                                 inputmode="numeric"
                                 autocomplete="off"
                                 placeholder="Precio"
-                                class="input-precio flex-grow bg-white border border-slate-200 focus:border-[#0056b3] outline-none rounded-lg px-2.5 py-1.5 font-bold text-xs">
-                            <button type="button" class="btn-toggle flex-shrink-0 flex items-center gap-1 px-2 py-1.5 rounded-lg font-black text-[9px] uppercase transition-all ${disp ? 'bg-green-100 text-green-700 hover:bg-orange-100 hover:text-orange-600' : 'bg-orange-100 text-orange-600 hover:bg-green-100 hover:text-green-700'}">
+                                class="input-precio w-full bg-white border border-slate-200 focus:border-[#0056b3] outline-none rounded-lg px-2.5 py-1.5 font-bold text-xs">
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <button type="button" class="btn-toggle flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg font-black text-[9px] uppercase transition-all ${disp ? 'bg-green-100 text-green-700 hover:bg-orange-100 hover:text-orange-600' : 'bg-orange-100 text-orange-600 hover:bg-green-100 hover:text-green-700'}">
                                 <i class="fa-solid ${disp ? 'fa-circle-check' : 'fa-circle-xmark'} text-[10px]"></i>
                                 ${disp ? 'Stock' : 'Agotado'}
                             </button>
-                            <button type="button" class="btn-oferta flex-shrink-0 flex items-center gap-1 px-2 py-1.5 rounded-lg font-black text-[9px] uppercase transition-all ${oferta ? 'bg-red-500 text-white' : 'bg-slate-100 text-slate-400 hover:bg-red-50 hover:text-red-500'}">
+                            <button type="button" class="btn-oferta flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg font-black text-[9px] uppercase transition-all ${oferta ? 'bg-red-500 text-white' : 'bg-slate-100 text-slate-400 hover:bg-red-50 hover:text-red-500'}">
                                 <i class="fa-solid fa-tag text-[10px]"></i>
                                 Oferta
                             </button>
@@ -692,10 +706,12 @@
                     </button>
                 </div>`;
 
-            div.querySelector('.input-nombre').value     = v.nombre;
-            div.querySelector('.input-precio').value     = v.precio !== '' ? v.precio : '';
+            // Setear valores
+            div.querySelector('.input-nombre').value    = v.nombre;
+            div.querySelector('.input-precio').value    = v.precio !== '' ? v.precio : '';
             div.querySelector('.input-precio-ant').value = v.precioAnterior ? v.precioAnterior : '';
 
+            // Eventos — siempre leen data-idx actual del div para evitar desincronización
             div.querySelector('.input-nombre').addEventListener('input', function() {
                 variantesData[parseInt(div.dataset.idx)].nombre = this.value;
             });
@@ -728,55 +744,63 @@
                 });
             });
 
-            // ── Upload foto variante (label+input, compatible iOS Safari) ──
+            // ── Upload de imagen de variante ──
+            const imgZone    = div.querySelector('.variante-img-zone');
             const imgInput   = div.querySelector('.variante-file-input');
-            const imgLabel   = div.querySelector('.variante-img-label');
             const imgPreview = div.querySelector('.variante-img-preview');
             const imgPlaceh  = div.querySelector('.variante-img-placeholder');
             const imgSpinner = div.querySelector('.variante-img-spinner');
             const imgRemove  = div.querySelector('.variante-img-remove');
 
-            imgInput.addEventListener('change', async function() {
-                const file = this.files[0];
+            imgInput.addEventListener('change', async function(e) {
+                const file = e.target.files[0];
                 if (!file) return;
-                this.value = '';
-                imgSpinner.classList.remove('hidden');
-                imgSpinner.classList.add('flex');
+                // IMPORTANTE: NO limpiar e.target.value aquí — en iOS Safari
+                // hacerlo antes del primer await puede hacer que el GC libere
+                // el objeto File antes de que FileReader termine de leerlo.
+                // Se limpia después de convertToWebP, cuando ya no se necesita.
+                // Mostrar spinner
+                imgSpinner.style.display = 'flex';
+                imgPlaceh.classList.add('hidden');
+                imgPreview.classList.add('hidden');
                 setUploading(true);
                 try {
-                    const blob = await convertToWebP(file);
-                    const fd   = new FormData();
-                    fd.append('file', blob, 'variante.webp');
-                    fd.append('upload_preset', UPLOAD_PRESET);
-                    const res  = await fetch(CLOUDINARY_URL, { method: 'POST', body: fd });
+                    const webpBlob = await convertToWebP(file);
+                    e.target.value = ''; // Limpiar aquí: el archivo ya fue leído
+                    const formData = new FormData();
+                    formData.append('file', webpBlob, 'variante.webp');
+                    formData.append('upload_preset', UPLOAD_PRESET);
+                    const res  = await fetch(CLOUDINARY_URL, { method: 'POST', body: formData });
                     const data = await res.json();
                     if (data.secure_url) {
-                        variantesData[parseInt(div.dataset.idx)].imagen = data.secure_url;
+                        const idx = parseInt(div.dataset.idx);
+                        variantesData[idx].imagen = data.secure_url;
                         imgPreview.src = data.secure_url;
                         imgPreview.classList.remove('hidden');
                         imgPlaceh.classList.add('hidden');
                         imgRemove.classList.remove('hidden');
-                        imgLabel.style.border = '2px solid #0056b3';
-                    } else { throw new Error('Sin URL'); }
+                        imgZone.classList.add('border-solid', 'border-[#0056b3]');
+                        imgZone.classList.remove('border-dashed', 'border-slate-200');
+                    }
                 } catch(err) {
-                    console.error('Error foto variante:', err);
-                    mostrarToastGlobal('Error al subir foto de variante');
+                    imgPlaceh.classList.remove('hidden');
+                    mostrarToastGlobal('Error al subir imagen de variante');
                 } finally {
-                    imgSpinner.classList.add('hidden');
-                    imgSpinner.classList.remove('flex');
+                    imgSpinner.style.display = 'none';
                     setUploading(false);
                 }
             });
 
             imgRemove.addEventListener('click', function(e) {
-                e.preventDefault();
                 e.stopPropagation();
-                variantesData[parseInt(div.dataset.idx)].imagen = '';
+                const idx = parseInt(div.dataset.idx);
+                variantesData[idx].imagen = '';
                 imgPreview.src = '';
                 imgPreview.classList.add('hidden');
                 imgPlaceh.classList.remove('hidden');
                 imgRemove.classList.add('hidden');
-                imgLabel.style.border = '2px dashed #cbd5e1';
+                imgZone.classList.remove('border-solid', 'border-[#0056b3]');
+                imgZone.classList.add('border-dashed', 'border-slate-200');
             });
 
             return div;
@@ -830,6 +854,7 @@
         const CLOUDINARY_URL  = "https://api.cloudinary.com/v1_1/dnakyanzq/image/upload";
         const UPLOAD_PRESET   = "uploads";
 
+        // Contador de subidas en curso para bloquear el botón guardar
         let uploadsEnCurso = 0;
 
         function setUploading(isUploading) {
@@ -848,18 +873,20 @@
             const file = event.target.files[0];
             if (!file) return;
             uploadImage(file, num);
+            // Limpiar el input para permitir volver a seleccionar el mismo archivo
             event.target.value = "";
         }
 
         async function uploadImage(file, num) {
-            const zone       = document.getElementById(`zone-${num}`);
-            const spinner    = document.querySelector(`.upload-spinner-${num}`);
-            const preview    = document.getElementById(`preview-${num}`);
-            const check      = document.getElementById(`check-${num}`);
-            const removeBtn  = document.getElementById(`remove-${num}`);
-            const imgInput   = document.getElementById(`img${num}`);
+            const zone    = document.getElementById(`zone-${num}`);
+            const spinner = document.querySelector(`.upload-spinner-${num}`);
+            const preview = document.getElementById(`preview-${num}`);
+            const check   = document.getElementById(`check-${num}`);
+            const removeBtn = document.getElementById(`remove-${num}`);
+            const imgInput  = document.getElementById(`img${num}`);
             const statusText = document.getElementById('upload-status-text');
 
+            // Mostrar estado de subida
             zone.classList.add('uploading');
             zone.classList.remove('has-image', 'error');
             spinner.classList.remove('hidden');
@@ -871,12 +898,16 @@
             setUploading(true);
 
             try {
-                const blob = await convertToWebP(file);
+                // Convertir a WebP usando Canvas antes de subir
+                const webpBlob = await convertToWebP(file);
+
                 const formData = new FormData();
-                formData.append("file", blob, `producto_img${num}.webp`);
+                formData.append("file", webpBlob, `producto_img${num}.webp`);
                 formData.append("upload_preset", UPLOAD_PRESET);
+
                 const res  = await fetch(CLOUDINARY_URL, { method: "POST", body: formData });
                 const data = await res.json();
+
                 if (data.secure_url) {
                     imgInput.value = data.secure_url;
                     preview.src = data.secure_url;
@@ -893,7 +924,7 @@
                 zone.classList.add('error');
                 zone.classList.remove('uploading', 'has-image');
                 imgInput.value = "";
-                mostrarToastGlobal(`Error al subir imagen ${num}`);
+                mostrarToastGlobal(`❌ Error al subir imagen ${num}`);
             } finally {
                 spinner.classList.add('hidden');
                 spinner.classList.remove('flex');
@@ -901,7 +932,7 @@
             }
         }
 
-        // ── Convierte a WebP con fallback a JPEG para iOS Safari ──
+        // Convierte cualquier imagen a WebP usando Canvas
         function convertToWebP(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -914,15 +945,11 @@
                         canvas.width  = img.width;
                         canvas.height = img.height;
                         canvas.getContext('2d').drawImage(img, 0, 0);
-                        // Intentar WebP — iOS Safari devuelve null si no lo soporta
-                        canvas.toBlob((blob) => {
-                            if (blob) { resolve(blob); return; }
-                            // Fallback a JPEG para iOS
-                            canvas.toBlob((jpegBlob) => {
-                                if (jpegBlob) { resolve(jpegBlob); return; }
-                                reject(new Error('No se pudo convertir la imagen'));
-                            }, 'image/jpeg', 0.88);
-                        }, 'image/webp', 0.85);
+                        canvas.toBlob(
+                            (blob) => blob ? resolve(blob) : reject(new Error('Canvas toBlob falló')),
+                            'image/webp',
+                            0.85
+                        );
                     };
                     img.onerror = reject;
                 };
@@ -937,6 +964,7 @@
             const check     = document.getElementById(`check-${num}`);
             const removeBtn = document.getElementById(`remove-${num}`);
             const imgInput  = document.getElementById(`img${num}`);
+
             imgInput.value = "";
             preview.src = "";
             preview.classList.add('hidden');
@@ -945,6 +973,7 @@
             zone.classList.remove('has-image', 'uploading', 'error');
         }
 
+        // Carga una URL existente (al editar un producto) en una zona
         function loadExistingImage(url, num) {
             if (!url) return;
             const zone      = document.getElementById(`zone-${num}`);
@@ -952,6 +981,7 @@
             const check     = document.getElementById(`check-${num}`);
             const removeBtn = document.getElementById(`remove-${num}`);
             const imgInput  = document.getElementById(`img${num}`);
+
             imgInput.value = url;
             preview.src = url;
             preview.classList.remove('hidden');
@@ -961,10 +991,12 @@
             zone.classList.remove('error', 'uploading');
         }
 
+        // Limpia las 6 zonas (llamado desde limpiarForm en admin.js)
         function resetImageZones() {
             [1, 2, 3, 4, 5, 6].forEach(num => removeImage({ stopPropagation: () => {} }, num));
         }
 
+        // Toast accesible desde este script (antes de que cargue el módulo)
         function mostrarToastGlobal(msj) {
             const t = document.getElementById("toast");
             if (!t) return;
@@ -992,14 +1024,15 @@
         })();
     </script>
 
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                    .then(reg => console.log('[PWA] SW registrado:', reg.scope))
-                    .catch(err => console.warn('[PWA] Error al registrar SW:', err));
-            });
-        }
-    </script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js')
+        .then(reg => console.log('[PWA] SW registrado:', reg.scope))
+        .catch(err => console.warn('[PWA] Error al registrar SW:', err));
+    });
+  }
+</script>
 </body>
 </html>
