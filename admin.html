@@ -909,8 +909,9 @@ var variantesData = [];
                 const data = await res.json();
 
                 if (data.secure_url) {
-                    imgInput.value = data.secure_url;
-                    preview.src = data.secure_url;
+                    const urlOptimizada = optimizarUrlCloudinary(data.secure_url);
+                    imgInput.value = urlOptimizada;
+                    preview.src = data.secure_url; // preview usa la original para no cachear transformación
                     preview.classList.remove('hidden');
                     check.classList.remove('hidden');
                     removeBtn.classList.remove('hidden');
@@ -932,7 +933,10 @@ var variantesData = [];
             }
         }
 
-        // Convierte cualquier imagen a WebP usando Canvas
+        // Convierte cualquier imagen a WebP, redimensionando a máx 1200px
+        const MAX_SIZE = 1200;
+        const WEBP_QUALITY = 0.82;
+
         function convertToWebP(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -941,20 +945,40 @@ var variantesData = [];
                     const img = new Image();
                     img.src = e.target.result;
                     img.onload = () => {
+                        let { width, height } = img;
+
+                        // Redimensionar si supera el máximo
+                        if (width > MAX_SIZE || height > MAX_SIZE) {
+                            if (width >= height) {
+                                height = Math.round((height / width) * MAX_SIZE);
+                                width  = MAX_SIZE;
+                            } else {
+                                width  = Math.round((width / height) * MAX_SIZE);
+                                height = MAX_SIZE;
+                            }
+                        }
+
                         const canvas = document.createElement('canvas');
-                        canvas.width  = img.width;
-                        canvas.height = img.height;
-                        canvas.getContext('2d').drawImage(img, 0, 0);
+                        canvas.width  = width;
+                        canvas.height = height;
+                        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
                         canvas.toBlob(
                             (blob) => blob ? resolve(blob) : reject(new Error('Canvas toBlob falló')),
                             'image/webp',
-                            0.85
+                            WEBP_QUALITY
                         );
                     };
                     img.onerror = reject;
                 };
                 reader.onerror = reject;
             });
+        }
+
+        // Aplica transformaciones de Cloudinary a la URL para servir versión optimizada
+        function optimizarUrlCloudinary(url) {
+            if (!url || !url.includes('res.cloudinary.com')) return url;
+            // f_auto = mejor formato según browser, q_auto = calidad automática, w_1200 = ancho máx
+            return url.replace('/upload/', '/upload/f_auto,q_auto,w_1200,c_limit/');
         }
 
         function removeImage(event, num) {
