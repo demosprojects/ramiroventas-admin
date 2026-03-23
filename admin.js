@@ -63,7 +63,7 @@ const KEYWORDS_AGOTADO     = ['agotado', 'sin stock', 'agotada', 'inactivo'];
 // Mapa de alias de categorías para búsqueda por texto
 const ALIAS_CATEGORIAS = {
     'dormitorio': 'Dormitorio', 'cuarto': 'Dormitorio', 'habitacion': 'Dormitorio', 'habitación': 'Dormitorio',
-    'colchon': 'Dormitorio', 'colchón': 'Dormitorio', 'colchones': 'Dormitorio', 'sommier': 'Dormitorio', 'sommiers': 'Dormitorio',
+    'colchon': 'Colchones & Sommiers', 'colchón': 'Colchones & Sommiers', 'colchones': 'Colchones & Sommiers', 'sommier': 'Colchones & Sommiers', 'sommiers': 'Colchones & Sommiers',
     'ropero': 'Dormitorio', 'roperos': 'Dormitorio', 'placard': 'Dormitorio',
     'comoda': 'Dormitorio', 'cómoda': 'Dormitorio', 'comodas': 'Dormitorio', 'cómodas': 'Dormitorio',
     'mesa de luz': 'Dormitorio', 'mesas de luz': 'Dormitorio', 'mesita': 'Dormitorio', 'mesitas': 'Dormitorio',
