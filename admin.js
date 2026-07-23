@@ -1,6 +1,6 @@
 import { db, auth } from "./firebase.js";
 import { 
-    collection, addDoc, getDocs, deleteDoc, doc, updateDoc 
+    collection, addDoc, getDocs, deleteDoc, doc, updateDoc, setDoc 
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
@@ -10,6 +10,7 @@ onAuthStateChanged(auth, (user) => {
         window.location.href = "login.html";
     } else {
         cargarProductos();
+        cargarTarjetas();
     }
 });
 
@@ -38,6 +39,173 @@ document.getElementById('confirm-logout-btn')?.addEventListener('click', async (
 let productos = [];
 let productosFiltrados = [];
 let idAEliminar = null;
+
+// ─── TARJETAS (planes de pago) ────────────────────────────────────────────────
+let tarjetas = [];
+
+async function cargarTarjetas() {
+    try {
+        const snap = await getDocs(collection(db, "tarjetas"));
+        tarjetas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        tarjetas.sort((a, b) => (a.banco || '').localeCompare(b.banco || '') || (a.cuotas - b.cuotas));
+        renderListaTarjetas();
+        renderCheckboxesTarjetas();
+    } catch (e) {
+        console.error("Error al cargar tarjetas:", e);
+    }
+}
+
+function renderListaTarjetas() {
+    const cont = document.getElementById('lista-tarjetas');
+    if (!cont) return;
+    if (!tarjetas.length) {
+        cont.innerHTML = `<p class="text-center text-slate-300 text-[11px] font-bold py-6">Todavía no cargaste ningún plan.</p>`;
+        return;
+    }
+    cont.innerHTML = tarjetas.map(t => `
+        <div class="flex items-center justify-between bg-white border border-slate-100 rounded-xl px-3 py-2.5">
+            <div>
+                <p class="font-black text-xs uppercase italic">${t.banco} <span class="text-slate-400 font-bold normal-case">· ${t.cuotas} cuotas</span></p>
+                <p class="text-[10px] text-slate-400 font-bold">Recargo: +${t.recargo}%</p>
+            </div>
+            <div class="flex items-center gap-1">
+                <button onclick="editarTarjeta('${t.id}')" class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-blue-50 hover:text-[#0056b3] transition-all">
+                    <i class="fa-solid fa-pen text-[11px]"></i>
+                </button>
+                <button onclick="eliminarTarjeta('${t.id}')" class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-red-50 hover:text-red-500 transition-all">
+                    <i class="fa-solid fa-trash-can text-[11px]"></i>
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Genera los checkboxes de tarjetas dentro del form de producto,
+// preservando cuáles quedaron tildados si ya había una selección previa
+function renderCheckboxesTarjetas(seleccionadas = null) {
+    const cont = document.getElementById('tarjetas-checkboxes');
+    if (!cont) return;
+
+    // Si no se pasa selección explícita, conservar la que esté tildada actualmente
+    const previas = seleccionadas || Array.from(cont.querySelectorAll('input[type="checkbox"]:checked')).map(i => i.value);
+
+    if (!tarjetas.length) {
+        cont.innerHTML = `<p class="text-[10px] text-slate-300 font-bold italic">No hay planes de tarjeta cargados todavía.</p>`;
+        return;
+    }
+    cont.innerHTML = tarjetas.map(t => `
+        <label class="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 cursor-pointer hover:border-[#0056b3] transition-all has-[:checked]:border-[#0056b3] has-[:checked]:bg-blue-50">
+            <input type="checkbox" value="${t.id}" class="tarjeta-checkbox accent-[#0056b3]" ${previas.includes(t.id) ? 'checked' : ''}>
+            <span class="text-[10px] font-bold text-slate-600">${t.banco} · ${t.cuotas}c (+${t.recargo}%)</span>
+        </label>
+    `).join('');
+}
+
+window.editarTarjeta = function(id) {
+    const t = tarjetas.find(x => x.id === id);
+    if (!t) return;
+    document.getElementById('tarjeta-edit-id').value = id;
+    document.getElementById('tarjeta-banco').value   = t.banco;
+    document.getElementById('tarjeta-cuotas').value  = t.cuotas;
+    document.getElementById('tarjeta-recargo').value = t.recargo;
+    document.getElementById('btn-guardar-tarjeta-txt').innerText = 'Guardar cambios';
+    document.getElementById('btn-cancelar-tarjeta').classList.remove('hidden');
+};
+
+window.cancelarEdicionTarjeta = function() {
+    document.getElementById('tarjeta-edit-id').value = '';
+    document.getElementById('tarjeta-banco').value = '';
+    document.getElementById('tarjeta-cuotas').value = '';
+    document.getElementById('tarjeta-recargo').value = '';
+    document.getElementById('btn-guardar-tarjeta-txt').innerText = 'Agregar plan';
+    document.getElementById('btn-cancelar-tarjeta').classList.add('hidden');
+};
+
+window.guardarTarjeta = async function() {
+    const id      = document.getElementById('tarjeta-edit-id').value;
+    const banco   = document.getElementById('tarjeta-banco').value.trim();
+    const cuotas  = Number(document.getElementById('tarjeta-cuotas').value);
+    const recargo = Number(document.getElementById('tarjeta-recargo').value);
+
+    if (!banco) return mostrarToast("Ingresá el nombre del banco/tarjeta");
+    if (!cuotas || cuotas < 1) return mostrarToast("Ingresá una cantidad de cuotas válida");
+    if (recargo === '' || isNaN(recargo) || recargo < 0) return mostrarToast("Ingresá un recargo válido");
+
+    const btn         = document.getElementById('btn-guardar-tarjeta');
+    const btnTexto    = document.getElementById('btn-guardar-tarjeta-texto');
+    const btnSpinner  = document.getElementById('btn-guardar-tarjeta-spinner');
+    btn.disabled = true;
+    btnTexto.classList.add('opacity-0');
+    btnSpinner.classList.remove('hidden');
+    try {
+        if (id) {
+            await updateDoc(doc(db, "tarjetas", id), { banco, cuotas, recargo });
+            mostrarToast("Plan actualizado");
+        } else {
+            await addDoc(collection(db, "tarjetas"), { banco, cuotas, recargo });
+            mostrarToast("Plan agregado");
+        }
+        cancelarEdicionTarjeta();
+        await cargarTarjetas();
+    } catch (e) {
+        console.error("Error al guardar tarjeta:", e);
+        mostrarToast("Error al guardar el plan");
+    } finally {
+        btn.disabled = false;
+        btnTexto.classList.remove('opacity-0');
+        btnSpinner.classList.add('hidden');
+    }
+};
+
+let idTarjetaAEliminar = null;
+
+window.eliminarTarjeta = function(id) {
+    const t = tarjetas.find(x => x.id === id);
+    if (!t) return;
+    idTarjetaAEliminar = id;
+    document.getElementById('modal-delete-tarjeta-texto').innerText =
+        `"${t.banco} · ${t.cuotas} cuotas" — Los productos que lo tenían cargado dejarán de mostrarlo.`;
+    document.getElementById('modal-delete-tarjeta').classList.remove('hidden');
+};
+
+window.cerrarModalDeleteTarjeta = function() {
+    document.getElementById('modal-delete-tarjeta').classList.add('hidden');
+    idTarjetaAEliminar = null;
+};
+
+document.getElementById('confirm-delete-tarjeta-btn')?.addEventListener('click', async () => {
+    if (!idTarjetaAEliminar) return;
+    const idParaBorrar = idTarjetaAEliminar;
+    const btn = document.getElementById('confirm-delete-tarjeta-btn');
+    btn.disabled = true;
+    try {
+        await deleteDoc(doc(db, "tarjetas", idParaBorrar));
+        tarjetas = tarjetas.filter(t => t.id !== idParaBorrar);
+        renderListaTarjetas();
+        renderCheckboxesTarjetas();
+        mostrarToast("Plan eliminado");
+        cerrarModalDeleteTarjeta();
+    } catch (e) {
+        console.error(e);
+        mostrarToast("Error al eliminar");
+    } finally {
+        btn.disabled = false;
+    }
+});
+
+window.abrirModalTarjetas = function() {
+    cancelarEdicionTarjeta();
+    renderListaTarjetas();
+    document.getElementById('modal-tarjetas').classList.remove('hidden');
+    document.body.classList.add('modal-active');
+};
+
+window.cerrarModalTarjetas = function() {
+    document.getElementById('modal-tarjetas').classList.add('hidden');
+    document.body.classList.remove('modal-active');
+    // Al cerrar, refrescar los checkboxes del form de producto por si se agregó/editó algo
+    renderCheckboxesTarjetas(Array.from(document.querySelectorAll('#tarjetas-checkboxes input:checked')).map(i => i.value));
+};
 
 // ─── CARGA INICIAL ────────────────────────────────────────────────────────────
 async function cargarProductos() {
@@ -219,11 +387,14 @@ document.getElementById('confirm-delete-btn')?.addEventListener('click', async (
     toggleLoader(true);
     try {
         await deleteDoc(doc(db, "products", idParaBorrar));
+        // Sacar el producto del array local en vez de recargar todo
+        productos = productos.filter(p => p.id !== idParaBorrar);
         mostrarToast("🔥 Eliminado");
-        await cargarProductos();
+        aplicarFiltros();
     } catch (e) {
         console.error("Error al eliminar:", e);
         mostrarToast(e.code === "permission-denied" ? "Sin permisos en Firestore" : "Error al borrar");
+    } finally {
         toggleLoader(false);
     }
 });
@@ -282,7 +453,8 @@ window.guardarProducto = async function() {
         precioAnterior:  document.getElementById("enOferta").checked
                             ? Number(document.getElementById("precioAnterior").value) || null
                             : null,
-        variantes:       variantesValidas
+        variantes:       variantesValidas,
+        tarjetas:        Array.from(document.querySelectorAll('#tarjetas-checkboxes input:checked')).map(i => i.value)
     };
 
     toggleLoader(true);
@@ -295,13 +467,19 @@ window.guardarProducto = async function() {
     try {
         if (id) {
             await updateDoc(doc(db, "products", id), datos);
+            // Actualizar el producto en el array local en vez de recargar todo
+            const idx = productos.findIndex(p => p.id === id);
+            if (idx !== -1) productos[idx] = { ...productos[idx], ...datos };
             mostrarToast("Producto actualizado");
         } else {
-            await addDoc(collection(db, "products"), { ...datos, fecha: Date.now() });
+            const fecha = Date.now();
+            const nuevoDoc = await addDoc(collection(db, "products"), { ...datos, fecha });
+            // Agregar el producto nuevo al array local en vez de recargar todo
+            productos.push({ id: nuevoDoc.id, ...datos, fecha });
             mostrarToast("Producto creado");
         }
         cerrarModalAdmin();
-        await cargarProductos();
+        aplicarFiltros();
     } catch (e) {
         console.error("Error al guardar:", e);
         mostrarToast(e.code === "permission-denied" ? "Sin permisos en Firestore" : "Error al guardar");
@@ -364,6 +542,9 @@ window.editarProducto = function(id) {
         cargarVariantesExistentes(p.variantes || []);
     }
 
+    // Pre-tildar los planes de tarjeta que ya tenía este producto
+    renderCheckboxesTarjetas(p.tarjetas || []);
+
     document.getElementById("modal-titulo").innerText = "Editar Producto";
     document.getElementById("btn-guardar-texto").innerText = "Actualizar producto";
     document.getElementById("modal-form").classList.remove("hidden");
@@ -399,4 +580,7 @@ function limpiarForm() {
 
     // Limpiar zonas de imagen — función global en admin.html
     if (typeof resetImageZones === 'function') resetImageZones();
+
+    // Destildar todos los planes de tarjeta
+    renderCheckboxesTarjetas([]);
 }
